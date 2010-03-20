@@ -102,6 +102,8 @@ Hitagi - Shall we talk about stars and micro web application frameworks.
 
 =head1 SYNOPSIS
 
+In myapp.pl
+
   use Hitagi;
   get '/' => sub { 'index.mt', render({ message => 'Hi' }) };
   star;
@@ -110,6 +112,10 @@ Hitagi - Shall we talk about stars and micro web application frameworks.
 
   @@index.mt
   <h1>message : <?= $message ?></h1>
+
+Run
+
+  ./myapp.pl
 
 =head1 DESCRIPTION
 
