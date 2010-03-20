@@ -44,37 +44,33 @@ sub post {
 
 sub render {
     my ( $file, $args ) = @_;
-    my $tmpl = $_DATA->get_data_section($file);
-    my $code =
-      Text::MicroTemplate->new( template => $tmpl, package => caller )->code;
-    my $builder = builder( $code, $args );
-    die "Cannot compile template '$file': $@" if $@;
-    my $body = $builder->($args)->as_string;
-    return [ 200, [], [$body] ];
-}
-
-sub builder {
-    my ( $code, $args ) = @_;
+    my $tmpl        = $_DATA->get_data_section($file);
     my $args_string = '';
     for my $key ( keys %{ $args || {} } ) {
         unless ( $key =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/ ) {
             die qq{Invalid template args key name: "$key"};
         }
         if ( ref( $args->{$key} ) eq 'CODE' ) {
-            $args_string .=
-              qq{my \$$key = \$args->{$key}->();\n};
+            $args_string .= qq{my \$$key = \$args->{$key}->();\n};
         }
         else {
-            $args_string .=
-              qq{my \$$key = \$args->{$key};\n};
+            $args_string .= qq{my \$$key = \$args->{$key};\n};
         }
     }
-    eval <<"...";
-    sub {
-            $args_string;
-            Text::MicroTemplate::encoded_string( $code->() );
+    my $code =
+      Text::MicroTemplate->new( template => $tmpl, package => caller )->code;
+    my $builder =
+      "sub { $args_string; Text::MicroTemplate::encoded_string( $code->() ); }";
+    local $@;
+    my $coderef = ( eval $builder );
+    die "Can't compile template '$file' : $@" if $@;
+    my $body = $coderef->($args);
+    return [ 200, [], [$body] ];
 }
-...
+
+sub builder {
+    my ( $tmt, $args ) = @_;
+    my $code = $tmt->code;
 }
 
 sub run {

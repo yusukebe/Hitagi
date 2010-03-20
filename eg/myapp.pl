@@ -4,7 +4,7 @@ get '/'      => 'index.mt';
 get '/hello' => sub {
     my $req = shift;
     my $name = $req->param('name') || 'no name';
-    render( 'hello.mt', { name => $name } );
+    render( 'hello.mt', { name => $name, hoge => { hoge => 'hoge' } } );
 };
 
 star;
@@ -20,4 +20,3 @@ __DATA__
 
 @@ hello.mt
 <h1>welcome <?= $name ?></h1>
-
