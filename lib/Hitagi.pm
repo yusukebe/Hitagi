@@ -16,30 +16,26 @@ sub app {
         if ( my $p = $_ROUTER->match($env) ) {
             my $req  = Plack::Request->new($env);
             my $code = $p->{action};
-            if ( ref $code eq 'CODE' ) {
-                &$code($req);
-            }
-            else {
-                render($code);
-            }
+            return &$code($req) if ref $code eq 'CODE';
+            render($code);
         }
         else {
             [ 404, [], ['Not Found'] ];
         }
-    }
+    };
 }
 
 sub any {
-    my ( $pattern, $code ) = @_;
-    $_ROUTER->connect( $pattern, { action => $code } );
+    my ( $pattern, $code, $method ) = @_;
+    $_ROUTER->connect( $pattern, { action => $code } , { method => $method } );
 }
 
 sub get {
-    any( $_[0], $_[1] );
+    any( $_[0], $_[1] , 'GET' );
 }
 
 sub post {
-    any( $_[0], $_[1] );
+    any( $_[0], $_[1] , 'POST' );
 }
 
 sub render {
@@ -64,8 +60,12 @@ sub render {
     local $@;
     my $coderef = ( eval $builder );
     die "Can't compile template '$file' : $@" if $@;
-    my $body = $coderef->($args);
-    return [ 200, [], [$body] ];
+    res( $coderef->($args) );
+}
+
+sub res {
+    my $body = shift;
+    return [ 200, [ 'Content-Length' => length $body ], [$body] ];
 }
 
 sub builder {
@@ -98,23 +98,31 @@ __END__
 
 =head1 NAME
 
-Hitagi - Shall we talk about stars and micro web application framework.
+Hitagi - Shall we talk about stars and micro web application frameworks.
 
 =head1 SYNOPSIS
 
   use Hitagi;
-  get '/' => render_text('Hi');
+  get '/' => sub { 'index.mt', render({ message => 'Hi' }) };
   star;
+
+  __DATA__
+
+  @@index.mt
+  <h1>message : <?= $message ?></h1>
 
 =head1 DESCRIPTION
 
-Hitagi is
+Hitagi is yet another micro web application framework
+using Plack::Request, Router::Simple, and Text::MicroTemplate.
 
 =head1 AUTHOR
 
 Yusuke Wada E<lt>yusuke at kamawada.comE<gt>
 
 =head1 SEE ALSO
+
+L<Mojolicious::Lite>, L<Dancer>, L<MojaMoja>
 
 =head1 LICENSE
 
