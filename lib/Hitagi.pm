@@ -73,11 +73,6 @@ sub handle_html {
     ];
 }
 
-sub builder {
-    my ( $tmt, $args ) = @_;
-    my $code = $tmt->code;
-}
-
 sub run {
     require Plack::Runner;
     my $runner = Plack::Runner->new;
