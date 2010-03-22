@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 use Hitagi;
+use MyApp;
+
+set 'view', { wrapper => [qw/header.mt content footer.mt/] };
+set 'model', { api => MyApp->new };
 
 get '/'    => 'index.mt';
 get '/text' => sub { 'Hello' };
@@ -24,3 +28,12 @@ __DATA__
 @@ hi.mt
 <h1>message : <?= $message ?></h1>
 
+@@ header.mt
+<html>
+</head><title>title</title></head>
+<body>
+
+@@ footer.mt
+<address>This content is made by Hitagi</address>
+</body>
+</html>
