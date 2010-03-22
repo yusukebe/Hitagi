@@ -68,7 +68,7 @@ sub res {
     $content_type ||= 'text/html';
     return [
         200,
-        [ 'Content-Length' => length $body, Content-Type => $content_type ],
+        [ 'Content-Length' => length $body, 'Content-Type' => $content_type ],
         [$body]
     ];
 }
