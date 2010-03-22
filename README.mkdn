@@ -1,24 +1,81 @@
 # Hitagi
 
-Shall we talk about stars and micro web application frameworks.
+> Shall we talk about stars and micro web application frameworks.
 
 ## SYNOPSIS
 
-In myapp.pl
+Write as
 
     use Hitagi;
     get '/' => sub { 'Hello' };
     star;
 
-Run
+Run it
 
     $ perl myapp.pl
+
+View at localhost:5000
 
 ## DESCRIPTION
 
 Hitagi is yet another micro web application framework
 using Plack::Request, Router::Simple, and Text::MicroTemplate.
 
+### EXAMPLE
+
+#### Using template in DATA section.
+
+    use Hitagi;
+    get '/' => 'index.mt';
+    star;
+
+    __DATA__
+
+    @@ index.mt
+    <h1>welcome</h1>
+
+#### Get params and give args to template
+
+    use Hitag;
+    get '/hi' => sub {
+        my ($req) = @_;
+        render( 'hi.mt',
+            { message => $req->param('message') || 'no message' } );
+    };
+    star;
+
+    __DATA__
+
+    @@ hi.mt
+    <h1>message : <?= $message ?></h1>
+
+#### Handle post request and get params from url path
+
+    post '/comment/:id' => sub {
+        my ( $req, $args ) = @_;
+        warn "Your id is : $args->{id}";
+        ...;
+    };
+
+#### Make custom response such as XML
+
+    get '/xml' => sub {
+        my $res = res(200);
+        $res->content_type('application/xml');
+        $res->body('<xml><root>content</root></xml>');
+        $res->finalize;
+    };
+
+## SEE ALSO
+
+- Plack::Request
+- Plack::Response
+- Router::Simple
+- Text::MicroTemplate
+
+## AUTHOR
+
+Yusuke Wada ( aka yusukebe )
 
 ****
 
