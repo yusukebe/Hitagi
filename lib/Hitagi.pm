@@ -4,6 +4,7 @@ use warnings;
 our $VERSION = '0.01';
 use Data::Section::Simple;
 use Plack::Request;
+use Plack::Response;
 use Router::Simple;
 use Text::MicroTemplate;
 
@@ -16,7 +17,9 @@ sub app {
         if ( my $p = $_ROUTER->match($env) ) {
             my $req  = Plack::Request->new($env);
             my $code = $p->{action};
-            return &$code($req) if ref $code eq 'CODE';
+            if ( ref $code eq 'CODE' ){
+                return &$code($req);
+            }
             render($code);
         }
         else {
@@ -83,7 +86,6 @@ sub run {
 sub run_as_cgi {
     require Plack::Handler::CGI;
     Plack::Handler::CGI->new->run(&app);
-
 }
 
 sub import {
@@ -95,11 +97,12 @@ sub import {
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
     *{"${caller}::render"} = sub { render(@_) };
+    *{"${caller}::res"} = sub { Plack::Response->new(@_) };
     if ( $ENV{'PLACK_ENV'} ){
-	*{"${caller}::star"} = \&app;
+        *{"${caller}::star"} = \&app;
     }else{
-	*{"${caller}::star"}   = sub { run(@_) };
-	*{"${caller}::star"}   = sub { run_as_cgi() } if $filename =~ /\.cgi$/;
+        *{"${caller}::star"}   = sub { run(@_) };
+        *{"${caller}::star"}   = sub { run_as_cgi() } if $filename =~ /\.cgi$/;
     }
 }
 
