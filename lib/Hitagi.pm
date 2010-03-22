@@ -60,7 +60,7 @@ sub render {
     local $@;
     my $coderef = ( eval $builder );
     die "Can't compile template '$file' : $@" if $@;
-    handle_html( $coderef->($args) );
+    handle_html( $coderef->($args)->as_string );
 }
 
 sub handle_html {
@@ -83,6 +83,7 @@ sub run {
 sub run_as_cgi {
     require Plack::Handler::CGI;
     Plack::Handler::CGI->new->run(&app);
+
 }
 
 sub import {
@@ -90,14 +91,15 @@ sub import {
     warnings->import;
     no strict 'refs';
     no warnings 'redefine';
-    my ($caller, $filename) = caller;
+    my ( $caller, $filename ) = caller;
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
     *{"${caller}::render"} = sub { render(@_) };
-    if( $filename =~ /\.cgi$/ ) {
-        *{"${caller}::star"}   = sub { run_as_cgi() };
+    if ( $ENV{'PLACK_ENV'} ){
+	*{"${caller}::star"} = \&app;
     }else{
-        *{"${caller}::star"}   = sub { run() };
+	*{"${caller}::star"}   = sub { run(@_) };
+	*{"${caller}::star"}   = sub { run_as_cgi() } if $filename =~ /\.cgi$/;
     }
 }
 
