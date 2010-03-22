@@ -10,6 +10,7 @@ use Text::MicroTemplate;
 
 my $_ROUTER = Router::Simple->new;
 my $_DATA;
+my $_SETTING = {};
 
 sub app {
     sub {
@@ -30,6 +31,11 @@ sub app {
     };
 }
 
+sub set {
+    my ( $name, $value ) = @_;
+    $_SETTING->{$name} = $value;
+}
+
 sub any {
     my ( $pattern, $code, $method ) = @_;
     $_ROUTER->connect( $pattern, { action => $code } , { method => $method } );
@@ -43,9 +49,25 @@ sub post {
     any( $_[0], $_[1] , 'POST' );
 }
 
+sub template {
+    my $file = shift;
+    if( defined $_SETTING->{view}->{wrapper} ) {
+        my $template = '';
+        for ( @{ $_SETTING->{view}->{wrapper} } ) {
+            if( $_ eq 'content'){
+                $template .= $_DATA->get_data_section($file);
+            }else{
+                $template .= $_DATA->get_data_section($_);
+            }
+        }
+        return $template;
+    }
+    return $_DATA->get_data_section($file);
+}
+
 sub render {
     my ( $file, $args ) = @_;
-    my $tmpl        = $_DATA->get_data_section($file);
+    my $tmpl        = template( $file );
     my $args_string = '';
     for my $key ( keys %{ $args || {} } ) {
         unless ( $key =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/ ) {
@@ -99,6 +121,7 @@ sub import {
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
     *{"${caller}::render"} = sub { render(@_) };
+    *{"${caller}::set"} = sub { set(@_) };
     *{"${caller}::res"} = sub { Plack::Response->new(@_) };
     if ( $ENV{'PLACK_ENV'} ){
         *{"${caller}::star"} = \&app;

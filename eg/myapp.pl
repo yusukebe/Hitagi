@@ -1,9 +1,7 @@
 #!/usr/bin/perl
 use Hitagi;
-use MyApp;
 
 set 'view', { wrapper => [qw/header.mt content footer.mt/] };
-set 'model', { api => MyApp->new };
 
 get '/'    => 'index.mt';
 get '/text' => sub { 'Hello' };
