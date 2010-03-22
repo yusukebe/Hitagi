@@ -2,6 +2,7 @@
 use Hitagi;
 
 get '/'    => 'index.mt';
+get '/text' => sub { 'Hello' };
 get '/hi'  => sub { render( 'hi.mt', { message => 'Hi' } ) };
 get '/xml' => sub {
     my $res = res(200);

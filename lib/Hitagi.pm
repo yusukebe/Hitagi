@@ -18,7 +18,9 @@ sub app {
             my $req  = Plack::Request->new($env);
             my $code = $p->{action};
             if ( ref $code eq 'CODE' ){
-                return &$code($req);
+                my $res = &$code($req);
+                return $res if ref $res eq 'ARRAY';
+                return handle_html($res);
             }
             render($code);
         }
@@ -68,7 +70,7 @@ sub render {
 
 sub handle_html {
     my ( $body, $content_type ) = @_;
-    $content_type ||= 'text/html';
+    $content_type ||= 'text/plain';
     return [
         200,
         [ 'Content-Length' => length $body, 'Content-Type' => $content_type ],
