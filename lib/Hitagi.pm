@@ -60,10 +60,10 @@ sub render {
     local $@;
     my $coderef = ( eval $builder );
     die "Can't compile template '$file' : $@" if $@;
-    res( $coderef->($args) );
+    handle_html( $coderef->($args) );
 }
 
-sub res {
+sub handle_html {
     my ( $body, $content_type ) = @_;
     $content_type ||= 'text/html';
     return [
