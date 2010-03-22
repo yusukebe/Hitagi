@@ -64,8 +64,13 @@ sub render {
 }
 
 sub res {
-    my $body = shift;
-    return [ 200, [ 'Content-Length' => length $body ], [$body] ];
+    my ( $body, $content_type ) = @_;
+    $content_type ||= 'text/html';
+    return [
+        200,
+        [ 'Content-Length' => length $body, Content-Type => $content_type ],
+        [$body]
+    ];
 }
 
 sub builder {
@@ -80,16 +85,25 @@ sub run {
     $runner->run(&app);
 }
 
+sub run_as_cgi {
+    require Plack::Handler::CGI;
+    Plack::Handler::CGI->new->run(&app);
+}
+
 sub import {
     strict->import;
     warnings->import;
     no strict 'refs';
     no warnings 'redefine';
-    my $caller = caller;
+    my ($caller, $filename) = caller;
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
     *{"${caller}::render"} = sub { render(@_) };
-    *{"${caller}::star"}   = sub { run() };
+    if( $filename =~ /\.cgi$/ ) {
+        *{"${caller}::star"}   = sub { run_as_cgi() };
+    }else{
+        *{"${caller}::star"}   = sub { run() };
+    }
 }
 
 1;
