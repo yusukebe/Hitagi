@@ -53,7 +53,7 @@ using Plack::Request, Router::Simple, and Text::MicroTemplate.
 
     post '/comment/:id' => sub {
         my ( $req, $args ) = @_;
-        warn "Your id is : $args->{id}";
+        warn "Comment id is : $args->{id}";
         ...;
     };
 
