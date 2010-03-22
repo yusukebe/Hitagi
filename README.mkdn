@@ -1,0 +1,51 @@
+# Hitagi
+
+Shall we talk about stars and micro web application frameworks.
+
+## SYNOPSIS
+
+In myapp.pl
+
+    use Hitagi;
+    get '/' => sub { 'Hello' };
+    star;
+
+Run
+
+    $ perl myapp.pl
+
+## DESCRIPTION
+
+Hitagi is yet another micro web application framework
+using Plack::Request, Router::Simple, and Text::MicroTemplate.
+
+
+****
+
+Currently, Hitagi is not CPAN module.
+
+## INSTALLATION
+
+Hitagi installation is straightforward. If your CPAN shell is set up,
+you should just be able to do
+
+    % cpan Hitagi
+
+Download it, unpack it, then build it as per the usual:
+
+    % perl Makefile.PL
+    % make && make test
+
+Then install it:
+
+    % make install
+
+## DOCUMENTATION
+
+Hitagi documentation is available as in POD. So you can do:
+
+    % perldoc Hitagi
+
+to read the documentation online with your favorite pager.
+
+Yusuke Wada
