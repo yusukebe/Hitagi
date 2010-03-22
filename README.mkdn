@@ -14,7 +14,7 @@ Run it
 
     $ perl myapp.pl
 
-View at localhost:5000
+View at http://localhost:5000
 
 ## DESCRIPTION
 
@@ -65,6 +65,28 @@ using Plack::Request, Router::Simple, and Text::MicroTemplate.
         $res->body('<xml><root>content</root></xml>');
         $res->finalize;
     };
+
+## Run as CGI, PSGI.
+
+If you save a application file with '.cgi' extention, it works as CGI.
+
+/home/user/public_html/hello.cgi
+
+    #!/usr/bin/perl
+
+    use Hitagi;
+    get '/' => sub { render( 'index.mt', { message => 'Hi' } ) };
+    star;
+
+    __DATA__
+    @@ index.mt
+    <h1>message : <?= $message ?></h1>
+
+View http://localhost/~user/hello.cgi/
+
+PSGI supported too.
+
+    $ plackup myapp.pl
 
 ## SEE ALSO
 
