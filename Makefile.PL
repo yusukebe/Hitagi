@@ -2,7 +2,11 @@ use inc::Module::Install;
 name 'Hitagi';
 all_from 'lib/Hitagi.pm';
 
-# requires '';
+requires 'Data::Section::Simple';
+requires 'Plack::Request';
+requires 'Plack::Response';
+requires 'Router::Simple';
+requires 'Text::MicroTemplate';
 
 tests 't/*.t';
 author_tests 'xt';
