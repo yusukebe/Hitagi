@@ -10,6 +10,10 @@ get '/xml' => sub {
     $res->body('<xml><root>content</root></xml>');
     $res->finalize;
 };
+get '/comment/:id' => sub {
+    my ( $req, $args ) = @_;
+    "Your comment id is $args->{id}";
+};
 
 star;
 

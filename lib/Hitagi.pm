@@ -18,7 +18,7 @@ sub app {
             my $req  = Plack::Request->new($env);
             my $code = $p->{action};
             if ( ref $code eq 'CODE' ){
-                my $res = &$code($req);
+                my $res = &$code($req, $p->{args});
                 return $res if ref $res eq 'ARRAY';
                 return handle_html($res);
             }
@@ -65,7 +65,7 @@ sub render {
     local $@;
     my $coderef = ( eval $builder );
     die "Can't compile template '$file' : $@" if $@;
-    handle_html( $coderef->($args)->as_string );
+    handle_html( $coderef->($args)->as_string, $args->{content_type} || 'text/html' );
 }
 
 sub handle_html {
