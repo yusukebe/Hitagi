@@ -63,7 +63,7 @@ sub render {
     my $builder =
       "sub { $args_string; Text::MicroTemplate::encoded_string( $code->() ); }";
     local $@;
-    my $coderef = ( eval $builder );
+    my $coderef = ( eval $builder ); ## no critic
     die "Can't compile template '$file' : $@" if $@;
     handle_html( $coderef->($args)->as_string, $args->{content_type} || 'text/html' );
 }
