@@ -9,8 +9,7 @@ use Router::Simple;
 use Text::MicroTemplate;
 
 my $_ROUTER = Router::Simple->new;
-my $_DATA;
-my $_BASE;
+my ($_DATA, $_BASE, $_DB);
 
 sub app {
     sub {
@@ -32,6 +31,11 @@ sub app {
     };
 }
 
+sub set {
+    my ( $name, $args ) = @_;
+    set_db($args) if $name eq 'db';
+}
+
 sub any {
     my ( $pattern, $code, $method ) = @_;
     $_ROUTER->connect( $pattern, { action => $code } , { method => $method } );
@@ -45,10 +49,10 @@ sub post {
     any( $_[0], $_[1] , 'POST' );
 }
 
-
 sub render {
     my ( $name, $args ) = @_;
-    my $template = code($name) or return;
+    $args ||= {};
+    my $template = code($name) or return [ 500, [], ['Internal Server Error'] ];
     my $code = $template;
     if( my $layout = code('layout') ){
         $code .= ";sub content { Text::MicroTemplate::encoded_string $template->() };";
@@ -93,6 +97,31 @@ sub args_string {
     $args_string;
 }
 
+
+sub set_db {
+    my ( $args ) = @_;
+    my $schema = $args->{schema};
+    local $@;
+    package DB::Schema;
+    use DBIx::Skinny::Schema;
+    eval $schema;
+    1;
+    die $@ if $@;
+    package DB;
+    use DBIx::Skinny;
+    1;
+    $_DB = DB->new(
+        {
+            dsn             => $args->{connect_info}[0],
+            username        => $args->{connect_info}[1],
+            password        => $args->{connect_info}[2],
+            connect_options => { AutoCommit => 1 },
+        }
+    );
+}
+
+sub db { return $_DB };
+
 sub handle_html {
     my ( $body, $content_type ) = @_;
     $content_type ||= 'text/plain';
@@ -123,8 +152,12 @@ sub import {
     my ( $caller, $filename ) = caller;
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
+    *{"${caller}::post"}    = sub { post(@_) };
     *{"${caller}::render"} = sub { render(@_) };
+    *{"${caller}::set"} = sub { set(@_) };
+    *{"${caller}::db"} = sub { db(@_) };
     *{"${caller}::res"} = sub { Plack::Response->new(@_) };
+    *{"${caller}::redirect"} = sub { return [302,['Location'=> shift],[]] };
     if ( $ENV{'PLACK_ENV'} ){
         *{"${caller}::star"} = \&app;
     }else{
