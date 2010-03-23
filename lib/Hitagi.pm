@@ -10,13 +10,14 @@ use Text::MicroTemplate;
 
 my $_ROUTER = Router::Simple->new;
 my $_DATA;
-my $_SETTING = {};
+my $_BASE;
 
 sub app {
     sub {
         my $env = shift;
+        my $req  = Plack::Request->new($env);
+        $_BASE = $req->base unless $_BASE;
         if ( my $p = $_ROUTER->match($env) ) {
-            my $req  = Plack::Request->new($env);
             my $code = $p->{action};
             if ( ref $code eq 'CODE' ){
                 my $res = &$code($req, $p->{args});
@@ -29,11 +30,6 @@ sub app {
             [ 404, [], ['Not Found'] ];
         }
     };
-}
-
-sub set {
-    my ( $name, $value ) = @_;
-    $_SETTING->{$name} = $value;
 }
 
 sub any {
@@ -49,25 +45,39 @@ sub post {
     any( $_[0], $_[1] , 'POST' );
 }
 
-sub template {
-    my $file = shift;
-    if( defined $_SETTING->{view}->{wrapper} ) {
-        my $template = '';
-        for ( @{ $_SETTING->{view}->{wrapper} } ) {
-            if( $_ eq 'content'){
-                $template .= $_DATA->get_data_section($file);
-            }else{
-                $template .= $_DATA->get_data_section($_);
-            }
-        }
-        return $template;
-    }
-    return $_DATA->get_data_section($file);
-}
 
 sub render {
-    my ( $file, $args ) = @_;
-    my $tmpl        = template( $file );
+    my ( $name, $args ) = @_;
+    my $template = code($name) or return;
+    my $code = $template;
+    if( my $layout = code('layout') ){
+        $code .= ";sub content { Text::MicroTemplate::encoded_string $template->() };";
+        $code .=  $layout;
+    }
+    $args->{base} = $_BASE;
+    my $args_string = args_string($args);
+    no warnings; #XXX
+    local $@;
+    my $renderer = eval <<  "..." or die $@;
+sub {
+    my \$args = shift; $args_string;
+    $code->();
+};
+...
+    handle_html( $renderer->($args), $args->{content_type} || 'text/html' );
+}
+
+sub code {
+    my $name     = shift;
+    my $template = $_DATA->get_data_section($name) or return;
+    my $mt       = Text::MicroTemplate->new( template => $template );
+    my $code     = $mt->code;
+    return $code;
+}
+
+# stolen from TMT::Extended
+sub args_string {
+    my $args        = shift;
     my $args_string = '';
     for my $key ( keys %{ $args || {} } ) {
         unless ( $key =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/ ) {
@@ -80,14 +90,7 @@ sub render {
             $args_string .= qq{my \$$key = \$args->{$key};\n};
         }
     }
-    my $code =
-      Text::MicroTemplate->new( template => $tmpl, package => caller )->code;
-    my $builder =
-      "sub { $args_string; Text::MicroTemplate::encoded_string( $code->() ); }";
-    local $@;
-    my $coderef = ( eval $builder ); ## no critic
-    die "Can't compile template '$file' : $@" if $@;
-    handle_html( $coderef->($args)->as_string, $args->{content_type} || 'text/html' );
+    $args_string;
 }
 
 sub handle_html {
@@ -121,7 +124,6 @@ sub import {
     $_DATA = Data::Section::Simple->new($caller);
     *{"${caller}::get"}    = sub { get(@_) };
     *{"${caller}::render"} = sub { render(@_) };
-    *{"${caller}::set"} = sub { set(@_) };
     *{"${caller}::res"} = sub { Plack::Response->new(@_) };
     if ( $ENV{'PLACK_ENV'} ){
         *{"${caller}::star"} = \&app;
