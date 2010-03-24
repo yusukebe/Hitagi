@@ -9,17 +9,17 @@ use Router::Simple;
 use Text::MicroTemplate;
 
 my $_ROUTER = Router::Simple->new;
-my ($_DATA, $_BASE, $_DB);
+my ( $_DATA, $_BASE, $_DB );
 
 sub app {
     sub {
         my $env = shift;
-        my $req  = Plack::Request->new($env);
+        my $req = Plack::Request->new($env);
         $_BASE = $req->base unless $_BASE;
         if ( my $p = $_ROUTER->match($env) ) {
             my $code = $p->{action};
-            if ( ref $code eq 'CODE' ){
-                my $res = &$code($req, $p->{args});
+            if ( ref $code eq 'CODE' ) {
+                my $res = &$code( $req, $p->{args} );
                 return $res if ref $res eq 'ARRAY';
                 return handle_html($res);
             }
