@@ -43,11 +43,17 @@ star;
 __DATA__
 
 @@ layout
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><title>nopaste</title></head>
+<head>
+  <title>nopaste</title>
+  <link rel="stylesheet" type="text/css" href="<?= $base ?>static/screen.css" />
+</head>
 <body>
-<h1><a href="<?= $base ?>">Yet Another nopaste</a></h1>
-<div id="container"><?= content ?></div>
+<div class="container">
+  <h1><a href="<?= $base ?>">Yet Another nopaste</a></h1>
+  <?= content ?>
+</div>
 </body>
 </html>
 

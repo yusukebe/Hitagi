@@ -202,28 +202,162 @@ Hitagi - Shall we talk about stars and micro web application frameworks.
 In myapp.pl
 
   use Hitagi;
-  get '/' => sub { 'index.mt', render({ message => 'Hi' }) };
+  get '/' => sub { 'index', render({ message => 'Hi' }) };
   star;
 
   __DATA__
 
-  @@index.mt
+  @@index
   <h1>message : <?= $message ?></h1>
 
 Run
 
-  ./myapp.pl
+  $ perl myapp.pl
 
 =head1 DESCRIPTION
 
 Hitagi is yet another micro web application framework
-using Plack::Request, Router::Simple, and Text::MicroTemplate.
+using Plack::Request, Router::Simple, Text::MicroTemplate, and DBIx::Skinny.
+
+=head2 EXAMPLE
+
+=head3 Using template in DATA section.
+
+Template format is as Text::MicroTemplate.
+
+  use Hitagi;
+  get '/' => 'index';
+  star;
+
+  __DATA__
+
+  @@ index
+  <h1>welcome</h1>
+
+=head3 Get params and give args to template
+
+  use Hitag;
+  get '/hi' => sub {
+      my ($req) = @_;
+      render( 'hi.mt',
+          { message => $req->param('message') || 'no message' } );
+  };
+  star;
+
+  __DATA__
+
+  @@ hi
+  <h1>message : <?= $message ?></h1>
+
+=head3 Handle post request and parse params from url path
+
+  post '/comment/:id' => sub {
+      my ( $req, $args ) = @_;
+      warn "Comment id is : $args->{id}";
+      ...;
+  };
+
+=head3 Handle static files
+
+Put your css or image files etc. to "static" directory.
+You can access these files on http://localhost:5000/static/xxx.css
+
+=head3 Make custom response such as XML
+
+res method returns Plack::Response.
+
+  get '/xml' => sub {
+      my $res = res(200);
+      $res->content_type('application/xml');
+      $res->body( template('xml') );
+      $res->finalize;
+  };
+
+  ...;
+
+  __DATA__
+
+  @xml
+  <xml><root>content</root></xml>
+
+=head3 Template layout setting
+
+  use Hitagi;
+
+  ...;
+
+  __DATA__
+  @@ index
+  <h1>welcome</h1>
+
+  @@ layout
+  <html>
+  </head><title>title</title></head>
+  <body>
+  <div id="container">
+      <?= content ?>
+  </div>
+  <address>This content is made by Hitagi</address>
+  </body>
+  </html>
+
+=head3 Using Model
+
+DBIx::Skinny based.
+
+  use Hitagi;
+
+  set db => {
+      connect_info => [ 'dbi:SQLite:','', '' ],
+      schema       => qq{
+          install_table entry => schema {
+             pk 'id';
+             columns qw/id body/;
+          };
+      }
+  };
+
+  db->do(q{CREATE TABLE entry ( id varchar, body text )});
+
+  ...;
+
+  get '/entry/{entry_id}' => sub {
+      my ( $req, $args ) = @_;
+      my $entry_id = $args->{entry_id};
+      my $entry = db->single( entry => { id => $entry_id, } );
+      return res(404,[],'Not Found')->finalize unless $entry;
+      render( 'entry', { body => $entry->body } );
+  };
+
+=head2 Run as CGI, PSGI.
+
+If you save a application file with '.cgi' extention, it works as CGI.
+
+/home/user/public_html/hello.cgi
+
+  #!/usr/bin/perl
+
+  use Hitagi;
+  get '/' => sub { render( 'index', { message => 'Hi' } ) };
+  star;
+
+  __DATA__
+  @@ index
+  <h1>message : <?= $message ?></h1>
+
+View http://localhost/~user/hello.cgi/
+
+PSGI supported too.
+
+  $ plackup myapp.pl
 
 =head1 AUTHOR
 
 Yusuke Wada E<lt>yusuke at kamawada.comE<gt>
 
 =head1 SEE ALSO
+
+L<Plack::Request>, L<Plack::Response>, L<Text::MicroTemplate>, L<DBIx::Skinny>
 
 L<Mojolicious::Lite>, L<Dancer>, L<MojaMoja>
 
