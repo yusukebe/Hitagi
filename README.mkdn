@@ -59,6 +59,11 @@ Template format is as Text::MicroTemplate.
         ...;
     };
 
+#### Handle static files
+
+Put your css or image files etc. to "static" directory.
+You can access these files on http://localhost:5000/static/xxx.css
+
 #### Make custom response such as XML
 
 res method returns Plack::Response.

@@ -3,8 +3,7 @@ name 'Hitagi';
 all_from 'lib/Hitagi.pm';
 
 requires 'Data::Section::Simple';
-requires 'Plack::Request';
-requires 'Plack::Response';
+requires 'Plack';
 requires 'Router::Simple';
 requires 'Text::MicroTemplate';
 requires 'DBIx::Skinny';

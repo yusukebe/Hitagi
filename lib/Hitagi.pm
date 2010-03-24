@@ -8,9 +8,10 @@ use Plack::Response;
 use Router::Simple;
 use Text::MicroTemplate;
 use File::Slurp qw/slurp/;
+use File::Basename qw/dirname/;
 
 my $_ROUTER = Router::Simple->new;
-my ( $_DATA, $_BASE, $_DB );
+my ( $_DATA, $_BASE, $_DB, $_BASE_DIR );
 
 sub app {
     sub {
@@ -147,9 +148,15 @@ sub handle_html {
 
 sub run {
     require Plack::Runner;
+    require Plack::Middleware::Static;
     my $runner = Plack::Runner->new;
     $runner->parse_options(@ARGV);
-    $runner->run(&app);
+    my $app = Plack::Middleware::Static->wrap(
+        &app,
+        path => qr{^/static/},
+        root => $_BASE_DIR,
+    );
+    $runner->run($app);
 }
 
 sub run_as_cgi {
@@ -163,6 +170,7 @@ sub import {
     no strict 'refs';
     no warnings 'redefine';
     my ( $caller, $filename ) = caller;
+    $_BASE_DIR = dirname( $filename );
     $_DATA = Data::Section::Simple->new($caller);
     my @functions = qw/get post render set db template/;
     for my $function (@functions) {

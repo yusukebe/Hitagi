@@ -20,18 +20,24 @@ star;
 __DATA__
 @@ index
 <h1>welcome</h1>
-<small><a href="<?= $base ?>hi">hi</a></small>
+<p><a href="<?= $base ?>hi">hi</a></p>
 
 @@ hi
 <h1>message : <?= $message ?></h1>
-<small><a href="<?= $base ?>">back</a></small>
+<p><a href="<?= $base ?>">back</a></p>
 
 @@ layout
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-</head><title>Hitagi</title></head>
+<head>
+  <title>Hitagi</title>
+  <link rel="stylesheet" type="text/css" href="<?= $base ?>static/screen.css" />
+</head>
 <body>
-<?= content ?>
-<br /><hr />
-<address>This content is made by Hitagi</address>
+  <div class="container">
+  <?= content ?>
+  <br /><hr />
+  <address>This content is made by Hitagi</address>
+  </div>
 </body>
 </html>
