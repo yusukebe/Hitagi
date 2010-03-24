@@ -8,6 +8,7 @@ requires 'Plack::Response';
 requires 'Router::Simple';
 requires 'Text::MicroTemplate';
 requires 'DBIx::Skinny';
+requires 'File::Slurp';
 
 tests 't/*.t';
 author_tests 'xt';

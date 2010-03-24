@@ -63,7 +63,7 @@ sub render {
     my $args_string = args_string($args);
     no warnings; #XXX
     local $@;
-    my $renderer = eval <<  "..." or die $@;
+    my $renderer = eval <<  "..." or die $@; ## no critic
 sub {
     my \$args = shift; $args_string;
     $code->();
@@ -117,7 +117,7 @@ sub set_db {
     local $@;
     package DB::Schema;
     use DBIx::Skinny::Schema;
-    eval $schema;
+    eval ( $schema );  ## no critic
     1;
     die $@ if $@;
     package DB;
