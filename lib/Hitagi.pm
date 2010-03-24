@@ -207,7 +207,7 @@ In myapp.pl
 
   __DATA__
 
-  @@index
+  @@ index
   <h1>message : <?= $message ?></h1>
 
 Run
