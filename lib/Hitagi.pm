@@ -202,7 +202,7 @@ Hitagi - Shall we talk about stars and micro web application frameworks.
 In myapp.pl
 
   use Hitagi;
-  get '/' => sub { 'index', render({ message => 'Hi' }) };
+  get '/' => sub { render('index', { message => 'Hi' }) };
   star;
 
   __DATA__
