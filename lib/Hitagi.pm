@@ -151,18 +151,20 @@ sub import {
     no warnings 'redefine';
     my ( $caller, $filename ) = caller;
     $_DATA = Data::Section::Simple->new($caller);
-    *{"${caller}::get"}    = sub { get(@_) };
-    *{"${caller}::post"}    = sub { post(@_) };
-    *{"${caller}::render"} = sub { render(@_) };
-    *{"${caller}::set"} = sub { set(@_) };
-    *{"${caller}::db"} = sub { db(@_) };
+    my @functions = qw/get post render set db/;
+    for my $function (@functions) {
+        *{"${caller}\::$function"} = \&$function;
+    }
     *{"${caller}::res"} = sub { Plack::Response->new(@_) };
-    *{"${caller}::redirect"} = sub { return [302,['Location'=> shift],[]] };
-    if ( $ENV{'PLACK_ENV'} ){
+    *{"${caller}::redirect"} =
+      sub { return [ 302, [ 'Location' => shift ], [] ] };
+    if ( $ENV{'PLACK_ENV'} ) {
         *{"${caller}::star"} = \&app;
-    }else{
-        *{"${caller}::star"}   = sub { run(@_) };
-        *{"${caller}::star"}   = sub { run_as_cgi() } if $filename =~ /\.cgi$/;
+    }
+    else {
+        *{"${caller}::star"} = sub { run(@_) };
+        *{"${caller}::star"} = sub { run_as_cgi() }
+          if $filename =~ /\.cgi$/;
     }
 }
 
