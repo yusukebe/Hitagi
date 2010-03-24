@@ -7,6 +7,7 @@ use Plack::Request;
 use Plack::Response;
 use Router::Simple;
 use Text::MicroTemplate;
+use File::Slurp qw/slurp/;
 
 my $_ROUTER = Router::Simple->new;
 my ( $_DATA, $_BASE, $_DB );
@@ -71,9 +72,17 @@ sub {
     handle_html( $renderer->($args), $args->{content_type} || 'text/html' );
 }
 
+sub template {
+    my $name = shift;
+    my $template = '';
+    $template = $_DATA->get_data_section($name);
+    $template = slurp($name) unless $template;
+    return $template;
+}
+
 sub code {
     my $name     = shift;
-    my $template = $_DATA->get_data_section($name) or return;
+    my $template = template( $name ) or return;
     my $mt       = Text::MicroTemplate->new( template => $template );
     my $code     = $mt->code;
     return $code;
@@ -151,7 +160,7 @@ sub import {
     no warnings 'redefine';
     my ( $caller, $filename ) = caller;
     $_DATA = Data::Section::Simple->new($caller);
-    my @functions = qw/get post render set db/;
+    my @functions = qw/get post render set db template/;
     for my $function (@functions) {
         *{"${caller}\::$function"} = \&$function;
     }
