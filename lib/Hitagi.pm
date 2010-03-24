@@ -76,7 +76,10 @@ sub template {
     my $name = shift;
     my $template = '';
     $template = $_DATA->get_data_section($name);
-    $template = slurp($name) unless $template;
+    local $@;
+    eval{
+        $template = slurp($name) unless $template;
+    };
     return $template;
 }
 
