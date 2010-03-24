@@ -12,6 +12,7 @@ set db => {
         };
     }
 };
+
 db->do(q{CREATE TABLE entry ( id varchar, body text )});
 
 get '/' => 'index';

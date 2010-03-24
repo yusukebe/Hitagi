@@ -7,6 +7,7 @@ requires 'Plack::Request';
 requires 'Plack::Response';
 requires 'Router::Simple';
 requires 'Text::MicroTemplate';
+requires 'DBIx::Skinny';
 
 tests 't/*.t';
 author_tests 'xt';

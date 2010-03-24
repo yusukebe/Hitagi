@@ -19,19 +19,21 @@ View at http://localhost:5000
 ## DESCRIPTION
 
 Hitagi is yet another micro web application framework
-using Plack::Request, Router::Simple, and Text::MicroTemplate.
+using Plack::Request, Router::Simple, Text::MicroTemplate, and DBIx::Skinny.
 
 ### EXAMPLE
 
 #### Using template in DATA section.
 
+Template format is as Text::MicroTemplate.
+
     use Hitagi;
-    get '/' => 'index.mt';
+    get '/' => 'index';
     star;
 
     __DATA__
 
-    @@ index.mt
+    @@ index
     <h1>welcome</h1>
 
 #### Get params and give args to template
@@ -46,10 +48,10 @@ using Plack::Request, Router::Simple, and Text::MicroTemplate.
 
     __DATA__
 
-    @@ hi.mt
+    @@ hi
     <h1>message : <?= $message ?></h1>
 
-#### Handle post request and get params from url path
+#### Handle post request and parse params from url path
 
     post '/comment/:id' => sub {
         my ( $req, $args ) = @_;
@@ -59,6 +61,8 @@ using Plack::Request, Router::Simple, and Text::MicroTemplate.
 
 #### Make custom response such as XML
 
+res method returns Plack::Response.
+
     get '/xml' => sub {
         my $res = res(200);
         $res->content_type('application/xml');
@@ -66,27 +70,54 @@ using Plack::Request, Router::Simple, and Text::MicroTemplate.
         $res->finalize;
     };
 
-#### Template setting
+#### Template layout setting
 
     use Hitagi;
-
-    set 'view', { wrapper => [qw/header.mt content footer.mt/] };
 
     ...;
 
     __DATA__
-    @@ index.mt
+    @@ index
     <h1>welcome</h1>
 
-    @@ header.mt
+    @@ layout
     <html>
     </head><title>title</title></head>
     <body>
-
-    @@ footer.mt
+    <div id="container">
+        <?= content ?>
+    </div>
     <address>This content is made by Hitagi</address>
     </body>
     </html>
+
+#### Model
+
+DBIx::Skinny based.
+
+    use Hitagi;
+
+    set db => {
+        connect_info => [ 'dbi:SQLite:','', '' ],
+        schema       => qq{
+            install_table entry => schema {
+               pk 'id';
+               columns qw/id body/;
+            };
+        }
+    };
+
+    db->do(q{CREATE TABLE entry ( id varchar, body text )});
+
+    ...;
+
+    get '/entry/{entry_id}' => sub {
+        my ( $req, $args ) = @_;
+        my $entry_id = $args->{entry_id};
+        my $entry = db->single( entry => { id => $entry_id, } );
+        return res(404,[],'Not Found')->finalize unless $entry;
+        render( 'entry', { body => $entry->body } );
+    };
 
 ## Run as CGI, PSGI.
 
@@ -97,11 +128,11 @@ If you save a application file with '.cgi' extention, it works as CGI.
     #!/usr/bin/perl
 
     use Hitagi;
-    get '/' => sub { render( 'index.mt', { message => 'Hi' } ) };
+    get '/' => sub { render( 'index', { message => 'Hi' } ) };
     star;
 
     __DATA__
-    @@ index.mt
+    @@ index
     <h1>message : <?= $message ?></h1>
 
 View http://localhost/~user/hello.cgi/
@@ -114,8 +145,10 @@ PSGI supported too.
 
 - Plack::Request
 - Plack::Response
-- Router::Simple
 - Text::MicroTemplate
+- DBIx::Skinny
+- Router::Simple
+- Data::Section::Simple
 
 ## AUTHOR
 
