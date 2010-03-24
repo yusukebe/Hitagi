@@ -100,7 +100,7 @@ sub args_string {
 
 sub set_db {
     my ( $args ) = @_;
-    my $schema = $args->{schema};
+    my $schema = $args->{schema} || '';
     local $@;
     package DB::Schema;
     use DBIx::Skinny::Schema;
@@ -112,9 +112,9 @@ sub set_db {
     1;
     $_DB = DB->new(
         {
-            dsn             => $args->{connect_info}[0],
-            username        => $args->{connect_info}[1],
-            password        => $args->{connect_info}[2],
+            dsn             => $args->{connect_info}[0] || '',
+            username        => $args->{connect_info}[1] || '',
+            password        => $args->{connect_info}[2] || '',
             connect_options => { AutoCommit => 1 },
         }
     );
