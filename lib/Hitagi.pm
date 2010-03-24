@@ -80,6 +80,7 @@ sub template {
     eval{
         $template = slurp($name) unless $template;
     };
+    chomp $template if $template;
     return $template;
 }
 

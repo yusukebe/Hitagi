@@ -8,7 +8,7 @@ my $s = do {
     get '/xml' => sub {
         my $res = res(200);
         $res->content_type('application/xml');
-        $res->body('<xml><root>content</root></xml>');
+        $res->body( template('xml'));
         $res->finalize;
     };
     star;
@@ -27,3 +27,8 @@ is_deeply(
     'Handling XML content type is OK.',
 );
 done_testing;
+
+__DATA__
+
+@@ xml
+<xml><root>content</root></xml>
