@@ -23,6 +23,7 @@ is_deeply(
         200,
         [ 'Content-Type' => 'application/xml' ],
         ['<xml><root>content</root></xml>']
-    ]
+    ],
+    'Handling XML content type is OK.',
 );
 done_testing;

@@ -12,7 +12,7 @@ my $s = do {
 my $res = $s->(
     { REQUEST_METHOD => 'GET', PATH_INFO => '/', HTTP_HOST => 'localhost' } );
 chomp $res->[2]->[0];
-is($res->[2]->[0],'Hello');
+is($res->[2]->[0],'Hello','Text style rendering is OK.');
 
 done_testing;
 
