@@ -66,9 +66,16 @@ res method returns Plack::Response.
     get '/xml' => sub {
         my $res = res(200);
         $res->content_type('application/xml');
-        $res->body('<xml><root>content</root></xml>');
+        $res->body( template('xml') );
         $res->finalize;
     };
+
+    ...;
+
+    __DATA__
+
+    @xml
+    <xml><root>content</root></xml>
 
 #### Template layout setting
 
